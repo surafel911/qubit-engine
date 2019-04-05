@@ -5,21 +5,21 @@
 #include <string.h>
 #include <stdbool.h>
 
-static inline bool
-vector_invalid(const struct qb_vector* vector)
+static bool
+_qb_vector_invalid(const struct qb_vector* vector)
 {
 	return (vector == NULL || vector->data_size == 0);
 }
 
-static inline bool
-vector_invalid_bounds(const struct qb_vector* vector,
+static bool
+_qb_vector_invalid_bounds(const struct qb_vector* vector,
 	const unsigned int index)
 {
 	return (index > vector->size || index < 0);
 }
 
-static inline unsigned int
-vector_closest_power(const unsigned int size)
+static unsigned int
+_qb_vector_closest_power(const unsigned int size)
 {
 	return pow(2, ceil(log2(size)));
 }
@@ -45,7 +45,7 @@ qb_vector_create(struct qb_vector* vector, const unsigned int initial_size,
 void
 qb_vector_destroy(struct qb_vector* vector)
 {
-	if (vector_invalid(vector)) {
+	if (_qb_vector_invalid(vector)) {
 		return;
 	}
 
@@ -56,11 +56,11 @@ qb_vector_destroy(struct qb_vector* vector)
 void*
 qb_vector_lookup(const struct qb_vector* vector, const unsigned int index)
 {
-	if (vector_invalid(vector)) {
+	if (_qb_vector_invalid(vector)) {
 		return NULL;
 	}
 
-	if (vector_invalid_bounds(vector, index)) {
+	if (_qb_vector_invalid_bounds(vector, index)) {
 		return NULL;
 	}
 
@@ -74,7 +74,7 @@ qb_vector_lookup(const struct qb_vector* vector, const unsigned int index)
 void*
 qb_vector_resize(struct qb_vector* vector, const unsigned int size)
 {
-	if (vector_invalid(vector)) {
+	if (_qb_vector_invalid(vector)) {
 		return NULL;
 	}
 
@@ -93,7 +93,7 @@ qb_vector_resize(struct qb_vector* vector, const unsigned int size)
 void*
 qb_vector_push(struct qb_vector* vector)
 {
-	if (vector_invalid(vector)) {
+	if (_qb_vector_invalid(vector)) {
 		return NULL;
 	}
 
@@ -101,7 +101,7 @@ qb_vector_push(struct qb_vector* vector)
 		vector->buffer = malloc(vector->data_size *
 			++vector->allocated);	
 	} else if (vector->size + 1 > vector->allocated) {
-		vector->allocated = vector_closest_power(vector->size + 1);
+		vector->allocated = _qb_vector_closest_power(vector->size + 1);
 		vector->buffer = realloc(vector->buffer, vector->data_size *
 			vector->allocated);
 	}
@@ -112,7 +112,7 @@ qb_vector_push(struct qb_vector* vector)
 void
 qb_vector_pop_back(struct qb_vector* vector)
 {
-	if (vector_invalid(vector)) {
+	if (_qb_vector_invalid(vector)) {
 		return;
 	}
 
@@ -124,7 +124,7 @@ qb_vector_pop_back(struct qb_vector* vector)
 		free(vector->buffer);
 		vector->allocated = 0;
 	} else if (vector->size - 1 == vector->allocated / 2) {
-		vector->allocated = vector_closest_power(vector->size - 1);
+		vector->allocated = _qb_vector_closest_power(vector->size - 1);
 		vector->buffer = realloc(vector->buffer, vector->data_size *
 			vector->allocated);
 	}
@@ -135,7 +135,7 @@ qb_vector_pop_back(struct qb_vector* vector)
 void
 qb_vector_pop_front(struct qb_vector* vector)
 {
-	if (vector_invalid(vector)) {
+	if (_qb_vector_invalid(vector)) {
 		return;
 	}
 
@@ -150,7 +150,7 @@ qb_vector_pop_front(struct qb_vector* vector)
 		free(vector->buffer);
 		vector->allocated = 0;
 	} else if (vector->size - 1 == vector->allocated / 2) {
-		vector->allocated = vector_closest_power(vector->size - 1);
+		vector->allocated = _qb_vector_closest_power(vector->size - 1);
 		vector->buffer = realloc(vector->buffer, vector->data_size *
 			vector->allocated);
 	}
@@ -161,16 +161,16 @@ qb_vector_pop_front(struct qb_vector* vector)
 void*
 qb_vector_insert(struct qb_vector* vector, const unsigned int index)
 {
-	if (vector_invalid(vector)) {
+	if (_qb_vector_invalid(vector)) {
 		return NULL;
 	}
 
-	if (vector_invalid_bounds(vector, index)) {
+	if (_qb_vector_invalid_bounds(vector, index)) {
 		return NULL;
 	}
 
 	if (vector->size + 1 == vector->allocated) {
-		vector->allocated = vector_closest_power(vector->size + 1);
+		vector->allocated = _qb_vector_closest_power(vector->size + 1);
 		vector->buffer = realloc(vector->buffer, vector->data_size *
 			vector->allocated);
 	}
@@ -187,11 +187,11 @@ qb_vector_insert(struct qb_vector* vector, const unsigned int index)
 void
 qb_vector_remove(struct qb_vector* vector, const unsigned int index)
 {
-	if (vector_invalid(vector)) {
+	if (_qb_vector_invalid(vector)) {
 		return;
 	}
 
-	if (vector_invalid_bounds(vector, index) || vector->size == 0) {
+	if (_qb_vector_invalid_bounds(vector, index) || vector->size == 0) {
 		return;
 	}
 
@@ -209,7 +209,7 @@ qb_vector_remove(struct qb_vector* vector, const unsigned int index)
 		vector->data_size * (vector->size - index));
 
 	if (vector->size - 1 == vector->allocated / 2) {
-		vector->allocated = vector_closest_power(vector->size - 1);
+		vector->allocated = _qb_vector_closest_power(vector->size - 1);
 		vector->buffer = realloc(vector->buffer, vector->data_size *
 			vector->allocated);
 	}

@@ -52,7 +52,7 @@ qb_update(void);
 void
 qb_terminate(void);
 
-double
+const double
 qb_delta(void);
 
 void
