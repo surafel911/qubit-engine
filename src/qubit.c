@@ -6,24 +6,15 @@
 
 static double _delta;
 static bool _exit_requested;
-static struct timespec _end, _start;
 
 static inline void
 update_delta(void)
 {
-	static long difference;
+	static clock_t begin, end;
 
-	clock_gettime(CLOCK_MONOTONIC, &_end);
-
-	difference = _end.tv_nsec - _start.tv_nsec;
-	if (difference < 0) {
-		_delta = (difference + 1000000000) / 1000000000.0;
-	} else {
-		_delta = difference / 1000000000.0;
-	}
-
-
-	clock_gettime(CLOCK_MONOTONIC, &_start);
+	end = clock();
+	_delta = (end - begin) / (double)CLOCKS_PER_SEC;
+	begin = clock();
 }
 
 void
@@ -42,7 +33,7 @@ qb_update(void)
 	update_delta();
 }
 
-double
+const double
 qb_delta(void)
 {
 	return _delta;
