@@ -4,11 +4,13 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include <qubit/platform/platform.h>
+
 static double _delta;
 static bool _exit_requested;
 
-static inline void
-update_delta(void)
+static void
+_qb_update_delta(void)
 {
 	static clock_t begin, end;
 
@@ -20,17 +22,19 @@ update_delta(void)
 void
 qb_setup(void)
 {
+	qb_platform_setup();
 }
 
 void
 qb_terminate(void)
 {
+	qb_platform_terminate();
 }
 
 void
 qb_update(void)
 {
-	update_delta();
+	_qb_update_delta();
 }
 
 const double
