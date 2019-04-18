@@ -24,6 +24,9 @@ qb_platform_window_create(const char* title, const unsigned int width,
 void
 qb_platform_window_destroy(void);
 
+void
+qb_platform_window_maximize(void);
+
 bool
 qb_platform_window_has_focus(void);
 
@@ -31,10 +34,10 @@ void
 qb_platform_window_get_focus(void);
 
 bool
-qb_platform_get_fullscreen(void);
+qb_platform_window_get_fullscreen(void);
 
 void
-qb_platform_set_fullscreen(const bool fullscreen);
+qb_platform_window_set_fullscreen(const bool fullscreen);
 
 void
 qb_platform_window_get_size(unsigned int* width, unsigned int* height);

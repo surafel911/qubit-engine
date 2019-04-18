@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define QB_ARRAY_SIZE(x) (sizeof(x)/sizeof(*x))
+
 #define QB_VECTOR_INIT {.buffer = NULL, .size = 0, .allocated = 0, .data_size = 0}
 
 #define QB_VECTOR_FOREACH(vector, index) \
@@ -133,5 +135,33 @@ qb_vector_insert(struct qb_vector* vector, const unsigned int index);
 
 void
 qb_vector_remove(struct qb_vector* vector, const unsigned int index);
+
+void
+qb_window_create(const char* title, const unsigned int width,
+	const unsigned height, const bool fullscreen);
+
+void
+qb_window_destroy(void);
+
+void
+qb_window_maximize(void);
+
+bool
+qb_window_has_focus(void);
+
+void
+qb_window_get_focus(void);
+
+bool
+qb_window_get_fullscreen(void);
+
+void
+qb_window_set_fullscreen(const bool fullscreen);
+
+void
+qb_window_get_size(unsigned int* width, unsigned int* height);
+
+void
+qb_window_set_size(const unsigned int width, const unsigned int height);
 
 #endif // QUBIT_QUBIT_H

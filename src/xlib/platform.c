@@ -22,16 +22,16 @@ _qb_platform_xlib_setup(void)
 static void
 _qb_platform_atoms_setup(void)
 {
+	_platform.atoms.wm_delete_window = XInternAtom(_platform.display,
+		"WM_DELETE_WINDOW", False);
 	_platform.atoms._net_wm_state = XInternAtom(_platform.display,
-		"_NET_WM_STATE", false);
-	_platform.atoms._net_wm_delete_window = XInternAtom(_platform.display,
-		"WM_DELETE_WINDOW", false);
+		"_NET_WM_STATE", False);
 	_platform.atoms._net_wm_state_fullscreen = XInternAtom(_platform.display,
-		"_NET_WM_FULLSCREEN", false);
+		"_NET_WM_STATE_FULLSCREEN", False);
 	_platform.atoms._net_wm_state_maximized_horz = XInternAtom(_platform.display,
-		"_NET_WM_MAXIMIZED_HORZ", false);
+		"_NET_WM_STATE_MAXIMIZED_HORZ", False);
 	_platform.atoms._net_wm_state_maximized_vert = XInternAtom(_platform.display,
-		"_NET_WM_MAXIMIZED_VERT", false);
+		"_NET_WM_STATE_MAXIMIZED_VERT", False);
 
 	qb_log_info("[XLIB] Atoms created.");
 }
@@ -58,6 +58,12 @@ _qb_platform_glx_setup(void)
 	} else {
 		qb_log_info("[GLAD] GLAD_GLX_EXT_swap_control supported.");
 	}
+}
+
+void
+qb_platform_xlib_sync(void)
+{
+	XSync(_platform.display, False);
 }
 
 void
