@@ -3,14 +3,17 @@ BINARY = qubit
 LIBBINARY = lib$(BINARY)
 INCDIR = -I include/
 LIBDIR =
+LIBRARIES = -lm
 SOURCES = src/*.c
+TEST = test/main.c
 
 ifeq ($(OS),Windows_NT)
  CC = gcc
  BINARY :=  $(strip $(BINARY)).exe
  LIBBINARY := $(strip $(LIBBINARY)).dll
  MACROS = -D_CRT_SECURE_NO_WARNINGS
- LIBRARIES = -lgdi32 -lopengl32 -luser32
+TEST = test/main.c
+ LIBRARIES += -lgdi32 -lopengl32 -luser32
  SOURCES += src/winapi/*.c
  else
  CC = clang
@@ -18,12 +21,9 @@ ifeq ($(OS),Windows_NT)
  MACROS = -DGLAD_GLX_NO_X11
  INCDIR += -I /usr/include/
  LIBDIR += -L /usr/lib
- LIBRARIES = -l dl -l X11
+ LIBRARIES += -l dl -l X11
  SOURCES += src/xlib/*.c
 endif
-
-LIBRARIES += -lm
-TEST = test/main.c
 
 .PHONY: all test export clean
 
