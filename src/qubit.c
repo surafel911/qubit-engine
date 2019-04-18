@@ -35,6 +35,10 @@ void
 qb_update(void)
 {
 	_qb_update_delta();
+
+	while (qb_platform_event_pending()) {
+		qb_platform_event_process_next();
+	}
 }
 
 const double
