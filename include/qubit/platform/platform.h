@@ -24,14 +24,11 @@ qb_platform_window_create(const char* title, const unsigned int width,
 void
 qb_platform_window_destroy(void);
 
-void
-qb_platform_window_maximize(void);
-
 bool
 qb_platform_window_has_focus(void);
 
 void
-qb_platform_window_get_focus(void);
+qb_platform_window_take_focus(void);
 
 bool
 qb_platform_window_get_fullscreen(void);
@@ -44,5 +41,8 @@ qb_platform_window_get_size(unsigned int* width, unsigned int* height);
 
 void
 qb_platform_window_set_size(const unsigned int width, const unsigned int height);
+
+void
+qb_platform_window_get_max_size(unsigned int* width, unsigned int* height);
 
 #endif // QUBIT_PLATFORM_H

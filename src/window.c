@@ -15,12 +15,6 @@ qb_window_destroy(void)
 	qb_platform_window_destroy();
 }
 
-void
-qb_window_maximize(void)
-{
-	qb_platform_window_maximize();
-}
-
 bool
 qb_window_has_focus(void)
 {
@@ -28,9 +22,9 @@ qb_window_has_focus(void)
 }
 
 void
-qb_window_get_focus(void)
+qb_window_take_focus(void)
 {
-	qb_platform_window_get_focus();
+	qb_platform_window_take_focus();
 }
 
 bool
@@ -55,4 +49,10 @@ void
 qb_window_set_size(const unsigned int width, const unsigned int height)
 {
 	qb_platform_window_set_size(width, height);
+}
+
+void
+qb_window_get_max_size(unsigned int* width, unsigned int* height)
+{
+	qb_platform_window_get_max_size(width, height);
 }

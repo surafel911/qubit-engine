@@ -18,7 +18,7 @@
 
 #define QB_HASH_TABLE_INIT {.buckets = NULL, .data_size = 0, .table_size = 0}
 
-#define QB_FATAL(format, ...) \
+#define QB_FATAL_ERROR(format, ...) \
 qb_log_error(format, ##__VA_ARGS__); \
 qb_abort(format, ##__VA_ARGS__); \
 
@@ -143,14 +143,11 @@ qb_window_create(const char* title, const unsigned int width,
 void
 qb_window_destroy(void);
 
-void
-qb_window_maximize(void);
-
 bool
 qb_window_has_focus(void);
 
 void
-qb_window_get_focus(void);
+qb_window_take_focus(void);
 
 bool
 qb_window_get_fullscreen(void);
@@ -163,5 +160,8 @@ qb_window_get_size(unsigned int* width, unsigned int* height);
 
 void
 qb_window_set_size(const unsigned int width, const unsigned int height);
+
+void
+qb_window_get_max_size(unsigned int* width, unsigned int* height);
 
 #endif // QUBIT_QUBIT_H
