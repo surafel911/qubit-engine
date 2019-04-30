@@ -9,5 +9,13 @@
 int
 main(int argc, char* argv[])
 {
-	puts("");
+	qb_setup();
+	qb_window_create("qubit", 2550, 1440, false);
+
+	while (!qb_exit_requested()) {
+		qb_update();
+	}
+
+	qb_window_destroy();
+	qb_terminate();
 }
