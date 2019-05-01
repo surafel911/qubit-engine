@@ -24,7 +24,7 @@ struct _qb_platform_window {
 	struct _qb_platform_window_atoms atoms;
 };
 
-struct _qb_platform_window _window;
+static struct _qb_platform_window _window;
 
 static void
 _qb_platform_window_set_atoms(void)
