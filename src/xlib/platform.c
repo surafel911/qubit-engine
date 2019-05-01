@@ -1,9 +1,9 @@
 #include <qubit/platform/platform.h>
 #include <qubit/platform/platform_xlib.h>
 
-#include <glad/glx.h>
 #include <X11/Xlib.h>
 
+#include <glad/glx.h>
 #include <qubit/qubit.h>
 
 static void
