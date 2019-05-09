@@ -18,6 +18,18 @@ void
 qb_platform_event_process_next(void);
 
 void
+qb_platform_opengl_setup(void);
+
+void
+qb_platform_opengl_terminate(void);
+
+void
+qb_platform_opengl_swap_buffers(void);
+
+void
+qb_platform_opengl_swap_interval(const int interval);
+
+void
 qb_platform_window_create(const char* title, const unsigned int width,
 	const unsigned height, const bool fullscreen);
 

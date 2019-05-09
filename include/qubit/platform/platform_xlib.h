@@ -18,6 +18,9 @@ struct qb_platform _platform;
 void
 qb_platform_xlib_sync(void);
 
+Window
+qb_platform_xlib_window_get_window(void);
+
 GLXFBConfig
 qb_platform_xlib_window_get_fb_config(void);
 
