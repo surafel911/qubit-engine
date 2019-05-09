@@ -26,6 +26,11 @@ typedef void (*qb_log_fn)(const char*);
 typedef void (*qb_abort_fn)(const char*);
 typedef void (*qb_hash_table_each_fn)(void*);
 
+enum qb_render_api {
+	QB_RENDER_GL,
+	QB_RENDER_VK,
+};
+
 struct qb_vector {
 	void* buffer;
 
@@ -107,6 +112,21 @@ qb_log_warn_set_fn(const qb_log_fn log_fn);
 
 void
 qb_log_error_set_fn(const qb_log_fn log_fn);
+
+void
+qb_renderer_create(const enum qb_render_api);
+
+void
+qb_renderer_destroy(void);
+
+void
+qb_renderer_clear(void);
+
+void
+qb_renderer_present(void);
+
+void
+qb_renderer_set_vsync(const bool vsync);
 
 void
 qb_vector_create(struct qb_vector* vector, const unsigned int initial_size,
