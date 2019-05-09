@@ -1,7 +1,6 @@
 #include <qubit/platform/platform.h>
 #include <qubit/platform/platform_xlib.h>
 
-#include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 
@@ -17,7 +16,7 @@ struct _qb_platform_window_atoms {
 };
 
 struct _qb_platform_window {
-	Window window;
+	Window root, window;
 	GLXFBConfig fb_config;
 	bool fullscreen;
 	unsigned int width, height;
@@ -88,8 +87,7 @@ _qb_platform_window_create(const int screen_id, const char* title, const unsigne
 	XSizeHints* size_hints;
 	XVisualInfo* visual_info;
 
-	Atom _net_wm_bypass_compositor;
-	Window root_window;
+	Atom atoms[2], _net_wm_bypass_compositor;
 	Colormap colormap;
 	XSetWindowAttributes window_attribs;
 
@@ -102,9 +100,9 @@ _qb_platform_window_create(const int screen_id, const char* title, const unsigne
 		QB_FATAL_ERROR("[GLX] Failed to get visual.");
 	}
 	
-	root_window = XRootWindow(_platform.display, screen_id);
+	_window.root = XRootWindow(_platform.display, screen_id);
 
-	colormap = XCreateColormap(_platform.display, root_window,
+	colormap = XCreateColormap(_platform.display, _window.root,
 		visual_info->visual, AllocNone);
 	if (colormap == None) {
 		QB_FATAL_ERROR("[XLIB] Failed to create colormap.");
@@ -121,7 +119,7 @@ _qb_platform_window_create(const int screen_id, const char* title, const unsigne
 		| LeaveWindowMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask
 		| ExposureMask | FocusChangeMask | PropertyChangeMask | StructureNotifyMask;
 
-	_window.window = XCreateWindow(_platform.display, root_window,
+	_window.window = XCreateWindow(_platform.display, _window.root,
 		x, y, _window.width, _window.height, 0, visual_info->depth, InputOutput,
 		visual_info->visual, CWOverrideRedirect | CWEventMask | CWColormap,
 		&window_attribs);
@@ -155,17 +153,32 @@ _qb_platform_window_create(const int screen_id, const char* title, const unsigne
 		_net_wm_bypass_compositor, XA_CARDINAL, 32, PropModeReplace,
 		(unsigned char*)&compositor, 1);
 
-	qb_platform_window_set_fullscreen(fullscreen);
+	atoms[0] = _window.atoms._net_wm_state_above;
+	atoms[1] = _window.atoms._net_wm_state_modal;
+	XChangeProperty(_platform.display, _window.window,
+		_window.atoms._net_wm_state, XA_ATOM, 32, PropModeReplace,
+		(unsigned char*)atoms, QB_ARRAY_SIZE(atoms));
+
+	qb_platform_xlib_sync();
 
 	XClearWindow(_platform.display, _window.window);
 	XRaiseWindow(_platform.display, _window.window);
 	XMapWindow(_platform.display, _window.window);
-	qb_platform_xlib_sync();
 
 	XMoveResizeWindow(_platform.display, _window.window, x, y,
-		_window.width, _window.height);
+		_window.width, _window.height);	
+	qb_platform_xlib_sync();
+	
+	qb_platform_window_set_fullscreen(fullscreen);
 
 	qb_platform_xlib_sync();
+}
+
+
+Window
+qb_platform_xlib_window_get_window(void)
+{
+	return _window.window;
 }
 
 GLXFBConfig
@@ -248,22 +261,20 @@ qb_platform_window_get_fullscreen(void)
 void
 qb_platform_window_set_fullscreen(const bool fullscreen)
 {
-	Atom atoms[] = {
-		_window.atoms._net_wm_state_above,
-		_window.atoms._net_wm_state_modal,
-		_window.atoms._net_wm_state_fullscreen,
-	};
+	XEvent event;
+
+	memset(&event, 0, sizeof(event));
+	event.type = ClientMessage;
+	event.xclient.window = _window.window;
+	event.xclient.format = 32;
+	event.xclient.message_type = _window.atoms._net_wm_state;
+	event.xclient.data.l[0] = fullscreen ? 1 : 0;
+	event.xclient.data.l[1] = _window.atoms._net_wm_state_fullscreen;
+	event.xclient.data.l[3] = 1;
 
 	_window.fullscreen = fullscreen;
-	if(fullscreen) {
-		XChangeProperty(_platform.display, _window.window,
-			_window.atoms._net_wm_state, XA_ATOM, 32, PropModeReplace,
-			(unsigned char*)atoms, QB_ARRAY_SIZE(atoms));
-	} else {
-		XChangeProperty(_platform.display, _window.window,
-			_window.atoms._net_wm_state, XA_ATOM, 32, PropModeReplace,
-			(unsigned char*)atoms, QB_ARRAY_SIZE(atoms) - 1);
-	}
+	XSendEvent(_platform.display, _window.root, False,
+		SubstructureNotifyMask | SubstructureRedirectMask, &event);
 
 	qb_platform_xlib_sync();
 }
