@@ -105,6 +105,8 @@ _qb_platform_window_create(const int screen_id, const char* title, const unsigne
 	colormap = XCreateColormap(_platform.display, _window.root,
 		visual_info->visual, AllocNone);
 	if (colormap == None) {
+		XFree(visual_info);
+
 		QB_FATAL_ERROR("[XLIB] Failed to create colormap.");
 	}
 
@@ -124,6 +126,9 @@ _qb_platform_window_create(const int screen_id, const char* title, const unsigne
 		visual_info->visual, CWOverrideRedirect | CWEventMask | CWColormap,
 		&window_attribs);
 	if (_window.window == None) {
+		XFree(visual_info);
+		XFreeColormap(_platform.display, colormap);
+
 		QB_FATAL_ERROR("[XLIB] Failed to create window.");
 	}
 
@@ -152,6 +157,7 @@ _qb_platform_window_create(const int screen_id, const char* title, const unsigne
 	XChangeProperty(_platform.display, _window.window,
 		_net_wm_bypass_compositor, XA_CARDINAL, 32, PropModeReplace,
 		(unsigned char*)&compositor, 1);
+	qb_platform_xlib_sync();
 
 	atoms[0] = _window.atoms._net_wm_state_above;
 	atoms[1] = _window.atoms._net_wm_state_modal;
