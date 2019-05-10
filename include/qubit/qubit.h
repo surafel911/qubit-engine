@@ -125,6 +125,9 @@ qb_renderer_clear(void);
 void
 qb_renderer_present(void);
 
+bool
+qb_renderer_get_vsync(void);
+
 void
 qb_renderer_set_vsync(const bool vsync);
 

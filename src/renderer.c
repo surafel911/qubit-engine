@@ -16,6 +16,7 @@ struct _qb_renderer_fn_table {
 };
 
 struct _qb_renderer {
+	bool vsync;
 	enum qb_render_api active_api;
 	struct _qb_renderer_fn_table fn_table;
 };
@@ -97,8 +98,15 @@ qb_renderer_present(void)
 	_renderer.fn_table.renderer_present();
 }
 
+bool
+qb_renderer_get_vsync(void)
+{
+	return _renderer.vsync;
+}
+
 void
 qb_renderer_set_vsync(const bool vsync)
 {
+	_renderer.vsync = vsync;
 	_renderer.fn_table.renderer_set_vsync(vsync);
 }
