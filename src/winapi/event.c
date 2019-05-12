@@ -36,6 +36,38 @@ qb_platform_event_pending(void)
 void
 qb_platform_event_process_next(void)
 {
+	switch(QB_GET_LOW_WORD(message.message)) {
+	case WM_KEYDOWN:
+		break;
+	case WM_KEYUP:
+		break;
+	case WM_MOUSEWHEEL:
+	case WM_MOUSEHWHEEL:
+		break;
+	case WM_MOUSEMOVE:
+		break;
+	case WM_LBUTTONDOWN:
+		break;
+	case WM_MBUTTONDOWN:
+		break;
+	case WM_RBUTTONDOWN:
+		break;
+	case WM_LBUTTONUP:
+		break;
+	case WM_MBUTTONUP:
+		break;
+	case WM_RBUTTONUP:
+		break;
+	case WM_SETFOCUS:
+		break;
+	case WM_KILLFOCUS:
+		break;
+	case WM_SIZING:
+		break;
+	default:
+		break;
+	}
+
 	TranslateMessage(&message);
 	DispatchMessage(&message);
 }

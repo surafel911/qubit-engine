@@ -14,7 +14,7 @@ struct qb_platform _platform;
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-HDC
-qb_platform_window_get_device_context(void);
+HWND
+qb_platform_window_get_window(void);
 
 #endif // QUBIT_PLATFORM_WINAPI_H

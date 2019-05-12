@@ -68,7 +68,9 @@ qb_platform_opengl_terminate(void)
 {
 	glXMakeContextCurrent(_platform.display, None, None, NULL);
 	glXDestroyWindow(_platform.display, _context.window);
+	qb_log_info("[GLX] Destroyed drawable window.");
 	glXDestroyContext(_platform.display, _context.context);
+	qb_log_info("[GLX] Destroyed context.");
 }
 
 void

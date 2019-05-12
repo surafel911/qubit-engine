@@ -2,7 +2,6 @@
 #include <qubit/platform/platform_winapi.h>
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
 
 #include <windows.h>
@@ -10,51 +9,34 @@
 #include <qubit/qubit.h>
 
 #define QB_WINDOW_CLASS_NAME	"Qubit"
-#define QB_WINDOW_STYLE_FULLSCREEN	WS_POPUP
-#define QB_WINDOW_STYLE_WINDOWED	WS_OVERLAPPEDWINDOW
+#define QB_WINDOW_STYLE_WINDOWED	(WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | \
+	WS_MINIMIZEBOX | WS_MAXIMIZEBOX)
+#define QB_WINDOW_STYLE_FULLSCREEN	(WS_POPUP | WS_VISIBLE)
 #define QB_WINDOW_STYLE_MASK		(QB_WINDOW_STYLE_WINDOWED | QB_WINDOW_STYLE_FULLSCREEN)
 
 struct _qb_platform_rect {
-	unsigned int width, height;
 	unsigned int x, y, w, h;
-};
-
-struct _qb_platfom_dimensions {
-	unsigned width, height;
 };
 
 struct _qb_platform_window {
 	HWND window;
-	HDC device_context;
 	bool fullscreen;
-	struct _qb_platfom_dimensions window_dimensions, screen_dimensions;
+	unsigned int screen_width, screen_height;
 };
 
 static struct _qb_platform_window _window;
 
-static void
-_qb_platform_window_set_style(struct _qb_platform_rect* bounds, DWORD style)
+HWND
+qb_platform_window_get_window(void)
 {
-	SetWindowLongA(_window.window, GWL_STYLE, style);
-	SetWindowPos(_window.window, HWND_TOPMOST, bounds->x, bounds->y,
-		bounds->w, bounds->h, SWP_SHOWWINDOW | SWP_NOACTIVATE |
-		SWP_NOCOPYBITS);
-}
-
-HDC
-qb_platform_window_get_device_context(void)
-{
-	return _window.device_context;
+	return _window.window;
 }
 
 void
 qb_platform_window_create(const char* title, const unsigned int width,
 	const unsigned int height, const bool fullscreen)
 {
-	DWORD style;
 	WNDCLASSEXA window_class;
-
-	struct _qb_platform_rect bounds;
 
 	window_class.cbSize = sizeof(window_class);
 	window_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
@@ -73,52 +55,26 @@ qb_platform_window_create(const char* title, const unsigned int width,
 		QB_FATAL_ERROR("[WINAPI] Failed to register window class.");
 	}
 
-	_window.window_dimensions.width = width;
-	_window.window_dimensions.height = height;
-	_window.screen_dimensions.width = GetSystemMetrics(SM_CXSCREEN);
-	_window.screen_dimensions.height = GetSystemMetrics(SM_CYSCREEN); 
+	_window.screen_width = GetSystemMetrics(SM_CXSCREEN);
+	_window.screen_height = GetSystemMetrics(SM_CYSCREEN); 
 
-	_window.fullscreen = fullscreen;
-	if (fullscreen) {
-		style = QB_WINDOW_STYLE_FULLSCREEN;
-
-		bounds.x = 0;
-		bounds.y = 0;
-		bounds.w = _window.screen_dimensions.width;
-		bounds.h = _window.screen_dimensions.height;
-
-		_window.window = CreateWindowExA(0, QB_WINDOW_CLASS_NAME, title,
-			style, bounds.x, bounds.y, bounds.w, bounds.h, NULL, NULL,
-			_platform.instance, NULL);
-	} else {
-		style = QB_WINDOW_STYLE_WINDOWED;
-
-		bounds.x = _window.screen_dimensions.width / 2 - width / 2;
-		bounds.y = _window.screen_dimensions.height / 2 - height / 2;
-		bounds.w = width;
-		bounds.h = height;
-
-		_window.window = CreateWindowExA(0, QB_WINDOW_CLASS_NAME, title,
-			style, bounds.x, bounds.y, bounds.w, bounds.h, NULL, NULL,
-			_platform.instance, NULL);
-	}
+	_window.window = CreateWindowExA(0, QB_WINDOW_CLASS_NAME, title,
+		QB_WINDOW_STYLE_WINDOWED, 0, 0, width, height, NULL, NULL, _platform.instance, NULL);
 	if (_window.window == NULL) {
 		QB_FATAL_ERROR("[WINAPI] Failed to create window.");
 	}
 
-	_window.device_context = GetWindowDC(_window.window);
-	if (_window.device_context == NULL) {
-		QB_FATAL_ERROR("[WINAPI] Failed to get device context.");
-	}
+	qb_log_info("[WINAPI] Created window.");
 
 	ShowWindow(_window.window, SW_SHOW);
 	SetForegroundWindow(_window.window);
+
+	qb_platform_window_set_fullscreen(fullscreen);
 }
 
 void
 qb_platform_window_destroy(void)
 {
-	ReleaseDC(_window.window, _window.device_context);
 	DestroyWindow(_window.window);
 	UnregisterClass(QB_WINDOW_CLASS_NAME, _platform.instance);
 }
@@ -144,6 +100,7 @@ qb_platform_window_get_fullscreen(void)
 void
 qb_platform_window_set_fullscreen(const bool fullscreen)
 {
+	UINT flags;
 	DWORD style;
 	
 	struct _qb_platform_rect bounds;
@@ -151,33 +108,36 @@ qb_platform_window_set_fullscreen(const bool fullscreen)
 	style = GetWindowLongA(_window.window, GWL_STYLE);
 	style &= ~QB_WINDOW_STYLE_MASK;
 
+	flags = SWP_SHOWWINDOW | SWP_NOCOPYBITS | SWP_FRAMECHANGED;
+
 	_window.fullscreen = fullscreen;
 	if (fullscreen) {
+		bounds.x = 0;
+		bounds.y = 0;
+		bounds.w = _window.screen_width;
+		bounds.h = _window.screen_height;
+
 		style |= QB_WINDOW_STYLE_FULLSCREEN;
-
-		bounds.x = 0;
-		bounds.x = 0;
-		bounds.w = _window.screen_dimensions.width;
-		bounds.h = _window.screen_dimensions.height;
-
-		_qb_platform_window_set_style(&bounds, style);
 	} else {
-		style |= QB_WINDOW_STYLE_WINDOWED;
-		
-		bounds.x = _window.screen_dimensions.width / 2 - _window.window_dimensions.width / 2;
-		bounds.y = _window.screen_dimensions.height / 2 - _window.window_dimensions.height / 2;
-		bounds.w = _window.window_dimensions.width;
-		bounds.h = _window.window_dimensions.height;
+		flags |= SWP_NOMOVE | SWP_NOSIZE;
 
-		_qb_platform_window_set_style(&bounds, style);
+		style |= QB_WINDOW_STYLE_WINDOWED;
 	}
+
+	SetWindowLongA(_window.window, GWL_STYLE, style);
+	SetWindowPos(_window.window, HWND_TOP, bounds.x, bounds.y,
+		bounds.w, bounds.h, flags);
 }
 
 void
 qb_platform_window_get_size(unsigned int* width, unsigned int* height)
 {
-	*width = _window.window_dimensions.width;
-	*height = _window.window_dimensions.height;
+	RECT rect;
+
+	GetWindowRect(_window.window, &rect);
+
+	*width = rect.right - rect.left;
+	*height = rect.bottom - rect.top;
 }
 
 void
@@ -186,20 +146,19 @@ qb_platform_window_set_size(const unsigned int width, const unsigned int height)
 	struct _qb_platform_rect bounds;
 
 	if (!_window.fullscreen) {
-		bounds.x = _window.screen_dimensions.width / 2 - width / 2;
-		bounds.y = _window.screen_dimensions.height / 2 - height / 2;
 		bounds.w = width;
 		bounds.h = height;
+		bounds.x = _window.screen_width / 2 - bounds.w / 2;
+		bounds.y = _window.screen_height / 2 - bounds.h / 2;
 
-		SetWindowPos(_window.window, HWND_TOPMOST, bounds.x, bounds.y,
-			bounds.w, bounds.h, SWP_SHOWWINDOW | SWP_NOACTIVATE |
-			SWP_NOCOPYBITS);
+		SetWindowPos(_window.window, HWND_TOP, bounds.x, bounds.y,
+			bounds.w, bounds.h, SWP_SHOWWINDOW | SWP_NOCOPYBITS);
 	}
 }
 
 void
 qb_platform_window_get_max_size(unsigned int* width, unsigned int* height)
 {
-	*width = _window.screen_dimensions.width;
-	*height = _window.screen_dimensions.height;
+	*width = _window.screen_width;
+	*height = _window.screen_height;
 }
