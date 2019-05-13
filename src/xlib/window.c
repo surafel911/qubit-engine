@@ -274,9 +274,15 @@ qb_platform_window_set_fullscreen(const bool fullscreen)
 	event.xclient.window = _window.window;
 	event.xclient.format = 32;
 	event.xclient.message_type = _window.atoms._net_wm_state;
-	event.xclient.data.l[0] = fullscreen ? 1 : 0;
 	event.xclient.data.l[1] = _window.atoms._net_wm_state_fullscreen;
 	event.xclient.data.l[3] = 1;
+
+	if (fullscreen) {
+		event.xclient.data.l[0] = 1;
+		qb_platform_window_set_size(_platform.screen_width, _platform.screen_height);
+	} else {
+		event.xclient.data.l[0] = 0;
+	}
 
 	_window.fullscreen = fullscreen;
 	XSendEvent(_platform.display, _window.root, False,
@@ -311,12 +317,6 @@ qb_platform_window_set_size(const unsigned int width, const unsigned int height)
 void
 qb_platform_window_get_max_size(unsigned int* width, unsigned int* height)
 {
-	Screen* screen;
-
-	screen = XDefaultScreenOfDisplay(_platform.display);
-
-	*width = XWidthOfScreen(screen);
-	*height = XHeightOfScreen(screen);
-
-	qb_platform_xlib_sync();
+	*width = _platform.screen_width;
+	*height = _platform.screen_height;
 }
