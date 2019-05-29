@@ -1,7 +1,6 @@
 #ifndef QUBIT_QUBIT_H
 #define QUBIT_QUBIT_H
 
-#include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -27,8 +26,23 @@ typedef void (*qb_abort_fn)(const char*);
 typedef void (*qb_hash_table_each_fn)(void*);
 
 enum qb_render_api {
+	QB_RENDER_NO,
 	QB_RENDER_GL,
 	QB_RENDER_VK,
+};
+
+struct qb_hash_bucket {
+	void* buffer;
+	void* data;
+	uint64_t* hash;
+
+	size_t size;
+};
+
+struct qb_hash_table {
+	struct qb_hash_bucket* buckets;
+
+	const size_t data_size, table_size;
 };
 
 struct qb_vector {
@@ -36,18 +50,6 @@ struct qb_vector {
 
 	const size_t data_size;
 	unsigned int size, allocated;
-};
-
-struct qb_hash_table {
-	struct qb_bucket {
-		void* buffer;
-		void* data;
-		uint64_t* hash;
-
-		size_t size;
-	} *buckets;
-
-	const size_t data_size, table_size;
 };
 
 void
@@ -118,6 +120,9 @@ qb_renderer_create(const enum qb_render_api);
 
 void
 qb_renderer_destroy(void);
+
+enum qb_render_api
+qb_renderer_get_active_api(void);
 
 void
 qb_renderer_clear(void);

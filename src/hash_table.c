@@ -14,16 +14,16 @@ _qb_hash_table_invalid(const struct qb_hash_table* hash_table)
 	return (hash_table == NULL);
 }
 
-static struct qb_bucket*
-_qb_buckets_create(const size_t table_size)
+static struct qb_hash_bucket*
+_qb_hash_buckets_create(const size_t table_size)
 {
-	struct qb_bucket* buckets = calloc(table_size, sizeof(struct qb_bucket));
+	struct qb_hash_bucket* buckets = calloc(table_size, sizeof(struct qb_bucket));
 
 	return buckets;
 }
 
 static void
-_qb_buckets_destroy(struct qb_bucket* buckets, const size_t table_size)
+_qb_hash_buckets_destroy(struct qb_hash_bucket* buckets, const size_t table_size)
 {
 	for (size_t index = 0; index < table_size; index++) {
 		free(buckets[index].buffer);
@@ -33,7 +33,7 @@ _qb_buckets_destroy(struct qb_bucket* buckets, const size_t table_size)
 }
 
 static int
-_qb__qb_bucket_hash_index(const struct qb_bucket* bucket, const uint64_t hash)
+_qb__qb_hash_bucket_hash_index(const struct qb_bucket* bucket, const uint64_t hash)
 {
 	for (int index = 0; index < bucket->size; index++) {
 		if (bucket->hash[index] == hash) {
@@ -45,7 +45,7 @@ _qb__qb_bucket_hash_index(const struct qb_bucket* bucket, const uint64_t hash)
 }
 
 static void*
-_qb_bucket_hash_add(struct qb_bucket* bucket, const uint64_t hash,
+_qb_hash_bucket_hash_add(struct qb_bucket* bucket, const uint64_t hash,
 	const size_t data_size)
 {
 	bucket->buffer = realloc(bucket->buffer, (sizeof(*bucket->hash) 
@@ -65,7 +65,7 @@ _qb_bucket_hash_add(struct qb_bucket* bucket, const uint64_t hash,
 }
 
 static void
-_qb_bucket_hash_remove(struct qb_bucket* bucket, const int index,
+_qb_hash_bucket_hash_remove(struct qb_bucket* bucket, const int index,
 	const size_t data_size)
 {
 	if (bucket->size - 1 == 0) {
@@ -104,7 +104,7 @@ qb_hash_table_create(struct qb_hash_table* hash_table, const size_t table_size,
 	*(size_t*)&hash_table->data_size = data_size;
 	*(size_t*)&hash_table->table_size = table_size;
 
-	hash_table->buckets = _qb_buckets_create(table_size);
+	hash_table->buckets = _qb_hash_buckets_create(table_size);
 }
 
 void
@@ -114,7 +114,7 @@ qb_hash_table_destroy(struct qb_hash_table* hash_table)
 		return;
 	}
 
-	_qb_buckets_destroy(hash_table->buckets, hash_table->table_size);
+	_qb_hash_buckets_destroy(hash_table->buckets, hash_table->table_size);
 	hash_table->buckets = NULL;
 	
 	*(size_t*)&hash_table->data_size = 0;
@@ -125,7 +125,7 @@ void*
 qb_hash_table_insert(struct qb_hash_table* hash_table, const uint64_t hash)
 {
 	int index;
-	struct qb_bucket* bucket;
+	struct qb_hash_bucket* bucket;
 
 	if (_qb_hash_table_invalid(hash_table)) {
 		return NULL;
@@ -134,20 +134,20 @@ qb_hash_table_insert(struct qb_hash_table* hash_table, const uint64_t hash)
 	bucket = (hash_table->buckets + (hash % hash_table->table_size));
 
 	if (bucket->size > 0) {
-		index = _qb__qb_bucket_hash_index(bucket, hash);
+		index = _qb__qb_hash_bucket_hash_index(bucket, hash);
 		if (index >= 0) {
 			return NULL;
 		}
 	}
 
-	return _qb_bucket_hash_add(bucket, hash, hash_table->data_size);
+	return _qb_hash_bucket_hash_add(bucket, hash, hash_table->data_size);
 }
 
 void
 qb_hash_table_remove(struct qb_hash_table* hash_table, const uint64_t hash)
 {
 	int index;
-	struct qb_bucket* bucket;
+	struct qb_hash_bucket* bucket;
 
 	if (_qb_hash_table_invalid(hash_table)) {
 		return;
@@ -156,12 +156,12 @@ qb_hash_table_remove(struct qb_hash_table* hash_table, const uint64_t hash)
 	bucket = (hash_table->buckets + (hash % hash_table->table_size));
 
 	if (bucket->size > 0) {
-		index = _qb__qb_bucket_hash_index(bucket, hash);
+		index = _qb__qb_hash_bucket_hash_index(bucket, hash);
 		if (index < 0) {
 			return;
 		}
 	
-		_qb_bucket_hash_remove(bucket, index, hash_table->data_size);
+		_qb_hash_bucket_hash_remove(bucket, index, hash_table->data_size);
 	}
 }
 
@@ -170,7 +170,7 @@ qb_hash_table_lookup(const struct qb_hash_table* hash_table,
 	const uint64_t hash)
 {
 	int index;
-	struct qb_bucket* bucket;
+	struct qb_hash_bucket* bucket;
 
 	if (_qb_hash_table_invalid(hash_table)) {
 		return NULL;
@@ -178,7 +178,7 @@ qb_hash_table_lookup(const struct qb_hash_table* hash_table,
 
 	bucket = (hash_table->buckets + (hash % hash_table->table_size));
 
-	index = _qb__qb_bucket_hash_index(bucket, hash);
+	index = _qb__qb_hash_bucket_hash_index(bucket, hash);
 	if (index < 0) {
 		return NULL;
 	}
@@ -190,7 +190,7 @@ void
 qb_hash_table_foreach(struct qb_hash_table* hash_table, 
 	const qb_hash_table_each_fn each_fn)
 {
-	struct qb_bucket* bucket;
+	struct qb_hash_bucket* bucket;
 
 	for (int i = 0; i < hash_table->table_size; i++) {
 		bucket = hash_table->buckets + i;
