@@ -17,7 +17,7 @@ _qb_hash_table_invalid(const struct qb_hash_table* hash_table)
 static struct qb_hash_bucket*
 _qb_hash_buckets_create(const size_t table_size)
 {
-	struct qb_hash_bucket* buckets = calloc(table_size, sizeof(struct qb_bucket));
+	struct qb_hash_bucket* buckets = calloc(table_size, sizeof(struct qb_hash_bucket));
 
 	return buckets;
 }
@@ -33,7 +33,7 @@ _qb_hash_buckets_destroy(struct qb_hash_bucket* buckets, const size_t table_size
 }
 
 static int
-_qb__qb_hash_bucket_hash_index(const struct qb_bucket* bucket, const uint64_t hash)
+_qb__qb_hash_bucket_hash_index(const struct qb_hash_bucket* bucket, const uint64_t hash)
 {
 	for (int index = 0; index < bucket->size; index++) {
 		if (bucket->hash[index] == hash) {
@@ -45,7 +45,7 @@ _qb__qb_hash_bucket_hash_index(const struct qb_bucket* bucket, const uint64_t ha
 }
 
 static void*
-_qb_hash_bucket_hash_add(struct qb_bucket* bucket, const uint64_t hash,
+_qb_hash_bucket_hash_add(struct qb_hash_bucket* bucket, const uint64_t hash,
 	const size_t data_size)
 {
 	bucket->buffer = realloc(bucket->buffer, (sizeof(*bucket->hash) 
@@ -65,7 +65,7 @@ _qb_hash_bucket_hash_add(struct qb_bucket* bucket, const uint64_t hash,
 }
 
 static void
-_qb_hash_bucket_hash_remove(struct qb_bucket* bucket, const int index,
+_qb_hash_bucket_hash_remove(struct qb_hash_bucket* bucket, const int index,
 	const size_t data_size)
 {
 	if (bucket->size - 1 == 0) {

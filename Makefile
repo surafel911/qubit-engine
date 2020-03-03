@@ -1,4 +1,4 @@
-CFLAGS = -m64 -Wall -Werror -std=c99 -pthread -funroll-loops
+CFLAGS = -m64 -Wall -std=c99 -pthread -funroll-loops
 BINARY = qubit
 LIBBINARY = lib$(BINARY)
 INCDIR = -I include/
@@ -12,9 +12,10 @@ ifeq ($(OS),Windows_NT)
  BINARY :=  $(strip $(BINARY)).exe
  LIBBINARY := $(strip $(LIBBINARY)).dll
  MACROS = -D _CRT_SECURE_NO_WARNINGS
-TEST = test/main.c
+ TEST = test/main.c
  LIBRARIES += -lgdi32 -lopengl32 -luser32
  SOURCES += src/winapi/*.c
+ MKDIR = New-Item -ItemType Directory -Force -Path bin/
  else
  CC = clang
  LIBBINARY := $(strip $(LIBBINARY)).so
@@ -23,23 +24,27 @@ TEST = test/main.c
  LIBDIR += -L /usr/lib
  LIBRARIES += -l dl -l X11
  SOURCES += src/xlib/*.c
+ MKDIR = mkdir -p bin/
 endif
 
 .PHONY: all test export clean
 
 all: debug
 
-debug:
+prerequisite:
+	$(shell $(MKDIR))
+
+debug: prerequisite
 	$(CC) -g $(CFLAGS) $(MACROS) \
 	$(INCDIR) $(LIBDIR) $(SOURCES) $(LIBRARIES) \
 	$(TEST) -o bin/$(BINARY)
 
-test:
+test: prerequisite
 	$(CC) -O3 $(CFLAGS) $(MACROS) \
 	$(INCDIR) $(LIBDIR) $(SOURCES) $(LIBRARIES) \
 	$(TEST) -o bin/$(BINARY)
 
-export:
-	$(CC) -O3 --shared -fPIC $(CFLAGS) $(MACROS) \
+export: prerequisite
+	$(CC) -O3 -Werror --shared -fPIC $(CFLAGS) $(MACROS) \
 	$(INCDIR) $(SOURCES) \
 	-o bin/$(LIBBINARY)
