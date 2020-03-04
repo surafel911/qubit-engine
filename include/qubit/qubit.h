@@ -31,18 +31,14 @@ enum qb_render_api {
 	QB_RENDER_VK,
 };
 
-struct qb_hash_bucket {
+struct qb_hash_table {
 	void* buffer;
 	void* data;
 	uint64_t* hash;
 
 	size_t size;
-};
 
-struct qb_hash_table {
-	struct qb_hash_bucket* buckets;
-
-	const size_t data_size, table_size;
+	const size_t data_size;
 };
 
 struct qb_vector {
@@ -78,7 +74,7 @@ qb_abort_set_fn(const qb_abort_fn abort_fn);
 
 void
 qb_hash_table_create(struct qb_hash_table* hash_table,
-	const size_t table_size, const size_t data_size);
+	const size_t data_size);
 
 void
 qb_hash_table_destroy(struct qb_hash_table* hash_table);
